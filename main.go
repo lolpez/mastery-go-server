@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -38,12 +40,25 @@ func getDocuments(w http.ResponseWriter, r *http.Request) {
 }
 
 func readFiles() {
-	files, err := ioutil.ReadDir("./files")
+	path := "./files/"
+	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	for _, f := range files {
+		b, err := ioutil.ReadFile(path + f.Name())
+		if err != nil {
+			fmt.Print(err)
+		}
+		fileContent := string(b) // convert file content into a 'string'
 		fmt.Println(f.Name())
+		fmt.Println(getMD5Checksum(fileContent))
 	}
+}
+
+func getMD5Checksum(content string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(content))
+	return hex.EncodeToString(hasher.Sum(nil))
 }
