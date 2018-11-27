@@ -26,6 +26,7 @@ func main() {
 	router.HandleFunc("/documents", getDocuments).Methods("GET")
 	router.HandleFunc("/documents/{id}", getDocumentById).Methods("GET")
 	router.HandleFunc("/documents", setDocument).Methods("POST")
+	router.HandleFunc("/documents/{id}", deleteDocumentById).Methods("DELETE")
 	log.Fatal(http.ListenAndServe(":9000", router))
 }
 
@@ -92,4 +93,31 @@ func setDocument(w http.ResponseWriter, r *http.Request) {
 	}
 	defer f.Close()
 	io.Copy(f, file)
+}
+
+func deleteDocumentById(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	w.WriteHeader(http.StatusOK)
+	id := vars["id"]
+	path := "./files/"
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, f := range files {
+		b, err := ioutil.ReadFile(path + f.Name())
+		if err != nil {
+			fmt.Print(err)
+		}
+		fileContent := string(b)
+		fmt.Println(path + f.Name())
+		if getMD5Checksum(fileContent) == id {
+			fullpath := path + f.Name()
+			err := os.Remove(fullpath)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+		}
+	}
 }
