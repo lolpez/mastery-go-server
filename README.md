@@ -17,15 +17,14 @@ That's all! :D
 
 A step by step series of examples that tell you have to get a Development env. running.
 
+* Run this command
+```
+dep init -v
+```
 * Clone the project to your src Golang project folder. (Ex Windows. C:\\Users\YOUR USER\go\src)
 * Inside the project folder, open a command prompt and type:
 ```
 go get -u github.com/golang/dep/cmd/dep
-```
-```
-dep init -v
-```
-```
 dep ensure -v 
 ```
 
