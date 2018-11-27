@@ -5,9 +5,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 )
@@ -23,6 +25,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/documents", getDocuments).Methods("GET")
 	router.HandleFunc("/documents/{id}", getDocumentById).Methods("GET")
+	router.HandleFunc("/documents", setDocument).Methods("POST")
 	log.Fatal(http.ListenAndServe(":9000", router))
 }
 
@@ -71,4 +74,22 @@ func getDocumentById(w http.ResponseWriter, r *http.Request) {
 			json.NewEncoder(w).Encode(Document{ID: getMD5Checksum(fileContent), Name: f.Name(), Size: f.Size()})
 		}
 	}
+}
+
+func setDocument(w http.ResponseWriter, r *http.Request) {
+	r.ParseMultipartForm(32 << 20)
+	file, handler, err := r.FormFile("uploadfile")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer file.Close()
+	fmt.Fprintf(w, "%v", handler.Header)
+	f, err := os.OpenFile("./files/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+	io.Copy(f, file)
 }
